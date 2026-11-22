@@ -2,9 +2,9 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../config/config.php';
 
-$engines = rows("SELECT table_name,engine FROM information_schema.tables
+$engines = rows("SELECT ENGINE AS storage_engine FROM information_schema.tables
     WHERE table_schema=DATABASE() AND table_name IN ('users','donations','requests')");
-$bad = count($engines) !== 3 || array_filter($engines, fn($row) => $row['engine'] !== 'InnoDB');
+$bad = count($engines) !== 3 || array_filter($engines, fn($row) => $row['storage_engine'] !== 'InnoDB');
 $conflicts = rows("SELECT d.id FROM donations d LEFT JOIN requests r ON r.donation_id=d.id
     GROUP BY d.id,d.status HAVING d.status IS NULL
     OR SUM(CASE WHEN r.status IN ('pending','approved','completed') THEN 1 ELSE 0 END) <>

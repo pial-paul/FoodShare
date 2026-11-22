@@ -81,7 +81,8 @@ test('original schema upgrade and donation lifecycle through HTTP', async t => {
   query("INSERT INTO donations (donor_id,food_name,quantity,location,expiry_date,status) VALUES (1,'Legacy loaf','1 loaf','North','2099-01-01','requested')");
   assert.equal(script('bin/check-upgrade.php').status,1);
   query("UPDATE donations SET status='available' WHERE id=1");
-  assert.equal(script('bin/check-upgrade.php').status,0);
+  const preflight = script('bin/check-upgrade.php');
+  assert.equal(preflight.status,0,preflight.stderr || preflight.stdout);
   schema('sql/migrations/001_handoffs.sql');
   assert.equal(query('SELECT food_name FROM donations WHERE id=1')[0].food_name,'Legacy loaf');
   const storage = mkdtempSync(join(tmpdir(),'foodshare-test-'));
