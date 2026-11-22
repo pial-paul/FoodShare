@@ -1,97 +1,44 @@
-# FoodShare – Smart Food Donation Platform
+# FoodShare
 
-## Overview
-FoodShare is a web-based application designed to reduce food waste by connecting donors (restaurants, grocery stores, and individuals) with receivers (NGOs, shelters, and people in need). The platform provides a simple interface for donors to list surplus food items and for receivers to browse and request available donations. Administrators can manage users and donations to ensure the integrity of the system.
+FoodShare connects kitchens with surplus food to people and organizations that can collect it. Restaurants, grocers and individual donors list an offer. A receiver can reserve it, see pickup instructions after approval, and confirm receipt. That last step gives a pilot organizer evidence of a handoff.
 
-## Key Features
-- **User Authentication**: Secure registration and login for Donors, Receivers, and Administrators.
-- **Food Donation**: Donors can list food items with details such as name, quantity, location, and expiry date.
-- **Donation Browsing**: Receivers can view and search available food items.
-- **Request System**: Receivers can request donations, and donors can update the status of their listings.
-- **Status Tracking**: Donation statuses transition through Available → Requested → Picked Up.
-- **Admin Panel**: Administrators can view and manage all users and donations, and remove inappropriate content.
+![FoodShare desktop home page](docs/images/landing.png)
 
-## Demo
-Ongoing...
+## What works
 
-## Technology Stack
-- **Frontend**: HTML5, CSS3, Bootstrap 4, JavaScript
-- **Backend**: PHP (Core PHP)
-- **Database**: MySQL
-- **Server**: Apache (via XAMPP)
+| Donor | Receiver | Coordinator |
+| --- | --- | --- |
+| List food, quantity, public area, private pickup instructions, handling information, expiry and an optional photo. | Search by food or area, sort by expiry, reserve an offer and release a reservation. | Review users, listings and requests. Suspend or restore accounts, release reservations and withdraw offers. |
+| Review incoming requests, approve a receiver and withdraw available listings. | Confirm an approved collection and optionally record measured kilograms. | Review receipt counts and weight coverage. Export monthly aggregates from the command line. |
 
-## Prerequisites
-- PHP 7.3 or higher
-- MySQL 5.0 or higher
-- XAMPP (or any LAMP/WAMP stack)
-- Git
+One listing represents one indivisible pickup. Dates use the service area's configured time zone. Receivers can browse without JavaScript. The project has local integration-test evidence. Partner participation, production uptime, waste avoided and food-security outcomes require a field pilot.
 
-## Installation
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/pial-paul/foodshare.git
-   cd foodshare
+## Run locally
+
+Use PHP 8.2+ with mysqli/mysqlnd, mbstring and fileinfo, plus an InnoDB database. CI targets MySQL 8.4 and MariaDB 10.11. Use a supported, patched runtime for hosted environments. The local integration suite also exercised MariaDB 10.4.32.
+
+1. Clone this repository. Create an empty database and provision a password-protected account with schema privileges for setup.
+2. Using the database client from the repository root, select your database and apply these files **in order**. Existing installations start with the upgrade preflight in the runbook.
+
+   ```sql
+   USE foodshare_db;
+   SOURCE sql/foodshare_db.sql;
+   SOURCE sql/migrations/001_handoffs.sql;
    ```
-2. **Configure the database**
-   - Create a MySQL database named `foodshare_db`.
-   - Import the schema from `sql/foodshare_db.sql` using phpMyAdmin or the MySQL CLI:
-     ```bash
-     mysql -u root -p foodshare_db < sql/foodshare_db.sql
-     ```
-3. **Set up configuration**
-   - Copy `config/config.sample.php` to `config/config.php`.
-   - Update database credentials in `config/config.php`.
-4. **Start the server**
-   - Launch XAMPP and start Apache and MySQL.
-   - Place the project folder in the `htdocs` directory.
-5. **Access the application**
-   - Open your browser and navigate to `http://localhost/foodshare`.
 
-## Usage
-1. **Register** as a Donor or Receiver via the registration page.
-2. **Login** to access your dashboard.
-3. **Donors**: Navigate to the Donate page to list food items.
-4. **Receivers**: Browse available donations and request items.
-5. **Donors**: Update the status of your donations in the dashboard.
-6. **Administrators**: Log in to the Admin Panel to manage users and donations.
+3. Export `FOODSHARE_DB_USER`, `FOODSHARE_DB_PASSWORD` and, for non-default connections, `FOODSHARE_DB_HOST`, `FOODSHARE_DB_PORT` and `FOODSHARE_DB_NAME` into the PHP process environment. Choose `FOODSHARE_TIMEZONE` for the pickup area. The default is UTC. PHP reads process variables directly.
+4. From the repository root run `php -d upload_max_filesize=5M -d post_max_size=6M -S 127.0.0.1:8000 -t public`. Visit [local FoodShare](http://127.0.0.1:8000). Register one donor and one receiver in separate browser profiles to try a handoff.
 
-## Project Structure
-```
-foodshare/
-├── css/                # Stylesheets
-├── img/uploads/        # Uploaded food images
-├── config/             # Configuration files
-│   └── config.php      # Database connection settings
-├── includes/           # Reusable header and footer
-├── sql/                # Database schema and seed data
-│   └── foodshare_db.sql
-├── index.php           # Landing page
-├── register.php        # User registration
-├── login.php           # User login
-├── logout.php          # Logout script
-├── dashboard.php       # User dashboard
-├── donate.php          # Donation form
-├── browse.php          # Browse donations
-├── request.php         # Handle requests
-├── admin.php           # Admin panel
-└── README.md           # Project documentation
-```
+## Project guide
 
-## Database Schema
-- **users**: `id`, `name`, `email`, `password`, `role`, `created_at`
-- **donations**: `id`, `donor_id`, `food_name`, `quantity`, `location`, `expiry_date`, `image`, `status`, `created_at`
-- **requests**: `id`, `receiver_id`, `donation_id`, `status`, `created_at`
+| Purpose | Start here |
+| --- | --- |
+| Architecture, baseline findings, priorities, dependencies and five implementation phases | [Audit and roadmap](docs/roadmap.md) |
+| Deploy, upgrade, schedule expiry, monitor, restore and release | [Operations](docs/operations.md) |
+| Reproduce the integration suite and inspect its coverage | [Verification](docs/verification.md) |
+| Pilot protocol, SDGs, evidence and research design | [Impact measurement](docs/impact.md) |
+| CV descriptions, demonstration and portfolio materials | [Professional presentation](docs/portfolio.md) |
+| Mobile interface | [Registration screenshot](docs/images/registration-mobile.png) |
+| Contributions, conduct, security and license | [Contributing](CONTRIBUTING.md) · [Conduct](CODE_OF_CONDUCT.md) · [Security](SECURITY.md) · [MIT](LICENSE) |
 
-## Contributing
-Contributions are welcome! Please follow these steps:
-1. Fork the repository.
-2. Create a new branch: `git checkout -b feature/YourFeature`.
-3. Commit your changes: `git commit -m 'Add some feature'`.
-4. Push to the branch: `git push origin feature/YourFeature`.
-5. Open a Pull Request.
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-*Happy coding and happy sharing!*
+`public/` is the web root. `src/` contains web, photo and handoff logic. `config/` opens the database connection. `includes/` holds shared presentation. `sql/` and `bin/` support operators. Uploaded images and SQL scripts belong outside the served tree.
