@@ -1,12 +1,3 @@
--- Create the database
-CREATE DATABASE IF NOT EXISTS foodshare_db;
-USE foodshare_db;
-
--- Drop tables if they exist to avoid errors
-DROP TABLE IF EXISTS requests;
-DROP TABLE IF EXISTS donations;
-DROP TABLE IF EXISTS users;
-
 -- Create Users Table
 CREATE TABLE users (
     id INT NOT NULL AUTO_INCREMENT,
@@ -18,7 +9,7 @@ CREATE TABLE users (
     address TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Create Donations Table
 CREATE TABLE donations (
@@ -33,7 +24,7 @@ CREATE TABLE donations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY (donor_id) REFERENCES users(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Create Requests Table
 CREATE TABLE requests (
@@ -45,9 +36,4 @@ CREATE TABLE requests (
     PRIMARY KEY (id),
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (donation_id) REFERENCES donations(id) ON DELETE CASCADE
-);
-
--- Insert a default admin user (password: adminpassword)
--- In a real application, use a properly hashed password instead of this example MD5
-INSERT INTO users (name, email, password, role) VALUES 
-('Admin', 'admin@foodshare.com', MD5('adminpassword'), 'admin');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

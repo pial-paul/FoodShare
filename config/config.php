@@ -1,74 +1,30 @@
 <?php
+declare(strict_types=1);
 
-// Database credentials
-define('DB_SERVER', 'localhost');
-define('DB_USERNAME', 'root');      
-define('DB_PASSWORD', '');
-define('DB_NAME', 'foodshare_db');
-
-// Attempt to connect to MySQL database
-$conn = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
-
-// Check the connection
-if (!$conn) {
-    die("ERROR: Could not connect to database. " . mysqli_connect_error());
-}
-
-// Set charset to ensure proper character encoding
-mysqli_set_charset($conn, "utf8mb4");
-
-/**
- * Helper function to safely escape user input for database operations
- * @param string $data The data to be sanitized
- * @return string The sanitized data
- */
-
-function sanitizeInput($data, $conn) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
-    $data = mysqli_real_escape_string($conn, $data);
-    return $data;
-}
-
-/**
- * Helper function to redirect with a message
- * @param string $location The URL to redirect to
- * @param string $message The message to display
- * @param string $type The type of message (success/error)
- */
-
-function redirectWithMessage($location, $message, $type = 'success') {
-    $_SESSION['message'] = $message;
-    $_SESSION['message_type'] = $type;
-    header("Location: $location");
-    exit();
-}
-
-/**
- * Function to check if user is logged in
- * @return boolean True if logged in, false otherwise
- */
-
-function isLoggedIn() {
-    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
-}
-
-/**
- * Function to check if user has specific role
- * @param string $role The role to check
- * @return boolean True if user has the role, false otherwise
- */
-
-function hasRole($role) {
-    if (!isLoggedIn()) {
-        return false;
+function db(): mysqli
+{
+    static $connection;
+    if (!$connection) {
+        $user = getenv('FOODSHARE_DB_USER');
+        $password = getenv('FOODSHARE_DB_PASSWORD');
+        if (!$user || $password === false || $password === '') {
+            throw new RuntimeException('Missing database configuration.');
+        }
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        $connection = new mysqli(getenv('FOODSHARE_DB_HOST') ?: '127.0.0.1', $user, $password,
+            getenv('FOODSHARE_DB_NAME') ?: 'foodshare_db', (int)(getenv('FOODSHARE_DB_PORT') ?: 3306));
+        $connection->set_charset('utf8mb4');
+        $connection->query("SET time_zone = '+00:00'");
     }
-    return isset($_SESSION['user_role']) && $_SESSION['user_role'] == $role;
+    return $connection;
 }
 
-// Start session if not already started
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
+function rows(string $sql, array $params = []): array
+{
+    return db()->execute_query($sql, $params)->fetch_all(MYSQLI_ASSOC);
 }
-?>
+
+function today(): string
+{
+    return (new DateTimeImmutable('now', new DateTimeZone(getenv('FOODSHARE_TIMEZONE') ?: 'UTC')))->format('Y-m-d');
+}

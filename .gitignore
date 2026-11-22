@@ -1,0 +1,7 @@
+/.env
+/.env.*
+!/.env.example
+/storage/
+/vendor/
+/tests/output/
+*.log
